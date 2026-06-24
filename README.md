@@ -1,80 +1,89 @@
-# ProToxNet
+# ProToxNet — Data Directory
 
-**Expression-Aware Proteome-Wide Binding for Tissue-Stratified Adverse Event Prediction**
+All data files live here at runtime. They are **not committed** to the repository.
 
-> Code will be released upon acceptance.  
-> Paper under review at *npj Digital Medicine*.
-
-## Overview
-
-ProToxNet predicts drug–adverse event (AE) associations by combining:
-- **ConPLex** proteome-wide drug–protein binding scores (ESM-1b + Morgan FP)
-- **GTEx** tissue expression profiles (68 tissues)
-- A **bilinear interaction model** (DistMult-style) trained on DrugCentral FAERS signals
-
-## Pipeline
-
-| Step | Script | Description |
-|------|--------|-------------|
-| 1 | `step1_data.py` | Download DrugCentral, FAERS, STRING PPI, CT-ADE |
-| 2 | `step2_conplex.py` | ESM-1b protein embeddings + ConPLex scoring |
-| 3 | `step3_exposure.py` | Drug × tissue exposure matrix (S · X) |
-| 4 | `step4_train.py` | Train bilinear ProToxNet model |
-| 5 | `step5_ctade.py` | CT-ADE external validation + AE vocabulary remapping |
-| 6 | `step6_figures.py` | All paper figures + Table 2 baselines |
-
-## Evaluation
-
-| Script | Experiment |
-|--------|------------|
-| `eval_ldo.py` | Leave-drug-out cold-start (AUC 0.8544) |
-| `eval_lao.py` | Leave-AE-out (AUC 0.8472) |
-| `eval_dilirank.py` | DILIrank enrichment (p=0.0002, Cliff's δ=0.591) |
-| `eval_baselines.py` | Fair baseline comparison (Table 2) |
-| `eval_ablation.py` | Bias terms + label smoothing ablation (Table 3) |
-| `eval_dti_sensitivity.py` | DTI sensitivity ablation |
-| `eval_bootstrap_ci.py` | Bootstrap 95% CIs (FAERS + CT-ADE) |
-| `eval_ctade_per_drug.py` | Per-trial-arm AUC histogram |
-
-## Key Results
-
-| Metric | Value |
-|--------|-------|
-| FAERS pair-level AUC | 0.9576 (95% CI: 0.9565–0.9588) |
-| FAERS pair-level AP | 0.9569 |
-| FAERS LDO AUC | 0.8544 |
-| FAERS LAO AUC | 0.8472 |
-| CT-ADE external AUC | 0.9157 (95% CI: 0.9131–0.9182) |
-| CT-ADE per-trial-arm AUC (mean/median) | 0.968 / 0.984 (n=497 arms) |
-| DILIrank most-concern vs no-concern | p=0.0002, Cliff's δ=0.591 |
-| Kinase inhibitor known-AE median rank | 88 / 13,200 (top 0.67%) |
-
-## Requirements
+## Directory layout (at runtime)
 
 ```
-pip install -r requirements.txt
+data/
+├── drugcentral_drug_target.csv     DrugCentral MoA targets (step1)
+├── drugcentral_faers.csv           FAERS LLR/ROR signals (step1)
+├── drugcentral_faers_female.csv    FAERS female-stratified (step1)
+├── drugcentral_faers_male.csv      FAERS male-stratified (step1)
+├── drugcentral_faers_ger.csv       FAERS geriatric-stratified (step1)
+├── hpa_tissue_expression.csv       GTEx/HPA TPM (assumed present, step1)
+├── string_ppi.csv                  STRING v12 PPI edges (step1)
+├── core_proteins.csv               DC ∩ GTEx ∩ STRING proteins (step1)
+├── bindingdb_kinase.csv            BindingDB/ChEMBL kinase affinities (step1)
+├── ctade_drug_ae.csv               CT-ADE benchmark test split (step1)
+├── id_maps.pkl                     Unified integer ID maps (step1)
+│
+├── protein_sequences.pkl           UniProt FASTA sequences (step2)
+├── protein_esm_embeddings.pkl      ESM-1b mean-pool embeddings (step2)
+├── conplex_scores_raw.csv          Drug × protein scores 6.5M pairs (step2)
+├── conplex_scores_matrix.pkl       Pivot matrix drugs × proteins (step2)
+├── conplex_calibration.pkl         Platt scaling params (step2)
+├── conplex_positives.csv           Known pairs with scores (step2)
+├── conplex_scoring_checkpoint.pkl  Scoring resume checkpoint (step2)
+│
+├── exposure_matrix.pkl             Drug × tissue exposure matrix (step3)
+├── exposure_matrix.csv             Human-readable (4310 × 68) (step3)
+├── exposure_topk.csv               Top-10 tissues per drug (step3)
+├── drug_tissue_zscore.csv          Z-scored exposure matrix (step3)
+│
+├── protoxnet_bilinear.pt           Best model checkpoint (step4)
+├── bilinear_embeddings.pkl         Drug + AE embeddings (step4)
+├── bilinear_history.csv            Training curves (step4)
+│
+├── ctade_ae_mapping.csv            CT-ADE AE → FAERS ae2id map (step5)
+├── ctade_predictions_remapped.csv  CT-ADE predictions 14.27M pairs (step5)
+│
+├── fig_ctade_per_drug_auc.png      Per-trial-arm AUC histogram (eval)
+├── fig_dilirank.png                DILIrank enrichment boxplot (eval)
+├── fig_ldo_per_drug_auc.png        LDO per-drug AUC histogram (eval)
+├── morgan_mat.npy                  Morgan FP matrix 4310 × 2048 (eval)
+│
+├── bootstrap_ci.csv                Bootstrap 95% CIs (eval)
+├── ldo_results.csv                 LDO cold-start AUC/AP (eval)
+├── lao_results.csv                 LAO AUC/AP (eval)
+├── dilirank_results.csv            DILIrank enrichment stats (eval)
+├── fair_baselines.csv              Baseline comparison Table 2 (eval)
+├── ablation.csv                    Ablation Table 3 (eval)
+├── dti_sensitivity.csv             DTI sensitivity ablation (eval)
+├── baseline_comparison.csv         Step6 baseline bar chart data (eval)
+├── kinase_case_study.csv           Kinase inhibitor AE ranks (step5)
+└── results_summary.csv             Summary of all key metrics
 ```
 
-Requires Google Drive mount at `/content/drive/MyDrive/ProToxNet/data/` (Colab)  
-or set `DRIVE` path in each script.
+## Data sources
 
-## Data
+| File | Source | URL |
+|------|--------|-----|
+| drugcentral_*.csv | DrugCentral PostgreSQL | unmtid-dbs.net:5433 / drugcentral.org/download |
+| hpa_tissue_expression.csv | Human Protein Atlas / GTEx v10 | proteinatlas.org/download |
+| 9606.protein.*.gz | STRING v12 | stringdb-downloads.org |
+| ctade_drug_ae.csv | CT-ADE (Zhang et al. 2023) | figshare.com/articles/dataset/CT-ADE/28142453 |
+| ConPLex checkpoint | Sledzieski et al. 2022 | cb.csail.mit.edu/cb/conplex/data/models/ |
 
-All data is publicly available:
-- **DrugCentral**: https://unmtid-dbs.net (PostgreSQL) or https://drugcentral.org/download
-- **GTEx v10 / HPA**: https://www.proteinatlas.org/download
-- **STRING v12**: https://string-db.org/cgi/download
-- **CT-ADE**: https://figshare.com/articles/dataset/CT-ADE/28142453
-- **ConPLex checkpoint**: https://cb.csail.mit.edu/cb/conplex/data/models/
+## Google Drive path
 
-## Citation
-
-```bibtex
-@article{ravideshik2025protoxnet,
-  title={Expression-Aware Proteome-Wide Binding for Tissue-Stratified Adverse Event Prediction},
-  author={Ravideshik, Vaibhava Lakshmi},
-  journal={npj Digital Medicine},
-  year={2025},
-  note={Under review}
-}
+All scripts default to:
+```python
+DRIVE = Path("/content/drive/MyDrive/ProToxNet/data")
 ```
+
+Override with:
+```bash
+python run.py --drive /path/to/your/data
+```
+
+## Storage requirements
+
+| Stage | Approx size |
+|-------|-------------|
+| Step 1 (raw data) | ~400 MB |
+| Step 2 (ESM-1b embeddings + scores) | ~2 GB |
+| Step 3 (exposure matrices) | ~50 MB |
+| Step 4 (model + embeddings) | ~20 MB |
+| Step 5 (CT-ADE predictions) | ~250 MB |
+| Total | ~3 GB |
