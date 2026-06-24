@@ -19,6 +19,13 @@ In the manuscript, this approach yields:
 - **Leave-AE-out AUC:** 0.8472
 - **CT-ADE external validation AUC:** 0.9157
 
+| Evaluation | AUC |
+|---|---:|
+| FAERS pair-level | 0.9576 |
+| Leave-drug-out (cold-start) | 0.8544 |
+| Leave-AE-out | 0.8472 |
+| CT-ADE external | 0.9157 |
+
 ## Architecture
 
 ![ProToxNet architecture](assets/protoxnet.png)
@@ -77,6 +84,8 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
+Recommended Python version: **Python >= 3.10**.
+
 ## Quick start
 
 Run the full pipeline:
@@ -107,6 +116,15 @@ python run.py --drive /path/to/data --steps 1 2 3
 ```
 
 By default, runtime outputs are written to [`data/`](data/).
+
+## Runtime environment and resource notes
+
+- The original scripts were developed for **Google Colab** workflows.
+- In this repository version, `--drive` sets the `PROTOXNET_DRIVE` environment variable, which is then used by the pipeline helpers to determine the runtime data directory.
+- If `PROTOXNET_DRIVE` is not set, the code defaults to the repository-local [`data/`](data/) directory.
+- Some older comments and manuscript text refer to `/content/drive/MyDrive/ProToxNet/data`; that reflects the original Colab setup rather than a hard requirement of this repo layout.
+- **Step 2** is the most computationally expensive stage and may require an **NVIDIA A100-class GPU** for practical runtimes.
+- Plan for roughly **~3 GB** of storage across downloaded data, embeddings, checkpoints, matrices, and generated outputs.
 
 ## Pipeline stages
 
@@ -209,10 +227,15 @@ If you use this repository, please cite the associated manuscript once available
   author       = {Ravideshik, Vaibhava Lakshmi},
   title        = {ProToxNet},
   year         = {2026},
+  note         = {Under review},
   publisher    = {GitHub},
   howpublished = {\url{https://github.com/vaibhavalakshmiravideshik/ProToxNet}}
 }
 ```
+
+## License
+
+No license file is currently included in the repository. If you plan to make the code openly reusable for the community, adding an explicit license such as MIT would be a good next step.
 
 ## Author
 
