@@ -217,5 +217,4 @@ If you use this repository, please cite the associated manuscript once available
 ## Author
 
 **Vaibhava Lakshmi Ravideshik**  
-Department of Computer Science and Engineering, University of Michigan  
 Email: [vlds@umich.edu](mailto:vlds@umich.edu)
