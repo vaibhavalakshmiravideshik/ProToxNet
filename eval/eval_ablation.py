@@ -28,9 +28,10 @@ from pathlib import Path
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, average_precision_score
+from eval import get_data_dir
 warnings.filterwarnings("ignore")
 
-DRIVE  = Path("/content/drive/MyDrive/ProToxNet/data")
+DRIVE  = get_data_dir()
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Device: {DEVICE}")
 

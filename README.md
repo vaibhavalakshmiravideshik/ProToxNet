@@ -1,89 +1,76 @@
-# ProToxNet — Data Directory
+# ProToxNet
 
-All data files live here at runtime. They are **not committed** to the repository.
+ProToxNet is a tissue-aware adverse event prediction pipeline that combines proteome-wide drug–protein binding, tissue-specific expression, and bilinear drug–AE modeling.
 
-## Directory layout (at runtime)
+## Repository structure
 
-```
-data/
-├── drugcentral_drug_target.csv     DrugCentral MoA targets (step1)
-├── drugcentral_faers.csv           FAERS LLR/ROR signals (step1)
-├── drugcentral_faers_female.csv    FAERS female-stratified (step1)
-├── drugcentral_faers_male.csv      FAERS male-stratified (step1)
-├── drugcentral_faers_ger.csv       FAERS geriatric-stratified (step1)
-├── hpa_tissue_expression.csv       GTEx/HPA TPM (assumed present, step1)
-├── string_ppi.csv                  STRING v12 PPI edges (step1)
-├── core_proteins.csv               DC ∩ GTEx ∩ STRING proteins (step1)
-├── bindingdb_kinase.csv            BindingDB/ChEMBL kinase affinities (step1)
-├── ctade_drug_ae.csv               CT-ADE benchmark test split (step1)
-├── id_maps.pkl                     Unified integer ID maps (step1)
-│
-├── protein_sequences.pkl           UniProt FASTA sequences (step2)
-├── protein_esm_embeddings.pkl      ESM-1b mean-pool embeddings (step2)
-├── conplex_scores_raw.csv          Drug × protein scores 6.5M pairs (step2)
-├── conplex_scores_matrix.pkl       Pivot matrix drugs × proteins (step2)
-├── conplex_calibration.pkl         Platt scaling params (step2)
-├── conplex_positives.csv           Known pairs with scores (step2)
-├── conplex_scoring_checkpoint.pkl  Scoring resume checkpoint (step2)
-│
-├── exposure_matrix.pkl             Drug × tissue exposure matrix (step3)
-├── exposure_matrix.csv             Human-readable (4310 × 68) (step3)
-├── exposure_topk.csv               Top-10 tissues per drug (step3)
-├── drug_tissue_zscore.csv          Z-scored exposure matrix (step3)
-│
-├── protoxnet_bilinear.pt           Best model checkpoint (step4)
-├── bilinear_embeddings.pkl         Drug + AE embeddings (step4)
-├── bilinear_history.csv            Training curves (step4)
-│
-├── ctade_ae_mapping.csv            CT-ADE AE → FAERS ae2id map (step5)
-├── ctade_predictions_remapped.csv  CT-ADE predictions 14.27M pairs (step5)
-│
-├── fig_ctade_per_drug_auc.png      Per-trial-arm AUC histogram (eval)
-├── fig_dilirank.png                DILIrank enrichment boxplot (eval)
-├── fig_ldo_per_drug_auc.png        LDO per-drug AUC histogram (eval)
-├── morgan_mat.npy                  Morgan FP matrix 4310 × 2048 (eval)
-│
-├── bootstrap_ci.csv                Bootstrap 95% CIs (eval)
-├── ldo_results.csv                 LDO cold-start AUC/AP (eval)
-├── lao_results.csv                 LAO AUC/AP (eval)
-├── dilirank_results.csv            DILIrank enrichment stats (eval)
-├── fair_baselines.csv              Baseline comparison Table 2 (eval)
-├── ablation.csv                    Ablation Table 3 (eval)
-├── dti_sensitivity.csv             DTI sensitivity ablation (eval)
-├── baseline_comparison.csv         Step6 baseline bar chart data (eval)
-├── kinase_case_study.csv           Kinase inhibitor AE ranks (step5)
-└── results_summary.csv             Summary of all key metrics
+```text
+ProToxNet/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── run.py
+├── pipeline/
+│   ├── __init__.py
+│   ├── step1_data.py
+│   ├── step2_conplex.py
+│   ├── step3_exposure.py
+│   ├── step4_train.py
+│   ├── step5_ctade.py
+│   └── step6_figures.py
+├── eval/
+│   ├── __init__.py
+│   ├── eval_ldo.py
+│   ├── eval_lao.py
+│   ├── eval_dilirank.py
+│   ├── eval_baselines.py
+│   ├── eval_ablation.py
+│   ├── eval_dti_sensitivity.py
+│   ├── eval_bootstrap_ci.py
+│   └── eval_ctade_per_drug.py
+└── data/
+    ├── .gitkeep
+    └── README.md
 ```
 
-## Data sources
+## Usage
 
-| File | Source | URL |
-|------|--------|-----|
-| drugcentral_*.csv | DrugCentral PostgreSQL | unmtid-dbs.net:5433 / drugcentral.org/download |
-| hpa_tissue_expression.csv | Human Protein Atlas / GTEx v10 | proteinatlas.org/download |
-| 9606.protein.*.gz | STRING v12 | stringdb-downloads.org |
-| ctade_drug_ae.csv | CT-ADE (Zhang et al. 2023) | figshare.com/articles/dataset/CT-ADE/28142453 |
-| ConPLex checkpoint | Sledzieski et al. 2022 | cb.csail.mit.edu/cb/conplex/data/models/ |
+Run the full pipeline:
 
-## Google Drive path
-
-All scripts default to:
-```python
-DRIVE = Path("/content/drive/MyDrive/ProToxNet/data")
-```
-
-Override with:
 ```bash
-python run.py --drive /path/to/your/data
+python run.py
 ```
 
-## Storage requirements
+Run selected pipeline steps:
 
-| Stage | Approx size |
-|-------|-------------|
-| Step 1 (raw data) | ~400 MB |
-| Step 2 (ESM-1b embeddings + scores) | ~2 GB |
-| Step 3 (exposure matrices) | ~50 MB |
-| Step 4 (model + embeddings) | ~20 MB |
-| Step 5 (CT-ADE predictions) | ~250 MB |
-| Total | ~3 GB |
+```bash
+python run.py --steps 1 2 3
+python run.py --steps 4 5 6
+```
+
+Run evaluations only:
+
+```bash
+python run.py --eval ldo lao
+python run.py --eval all
+```
+
+Override the default runtime data directory:
+
+```bash
+python run.py --drive /path/to/data --steps 1 2 3
+```
+
+By default, outputs are written to `data/` inside the repository.
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+## Notes
+
+- Large datasets, checkpoints, matrices, and generated figures are not committed.
+- Runtime data layout and expected files are documented in `data/README.md`.
+- The main orchestration entry point is `run.py`.

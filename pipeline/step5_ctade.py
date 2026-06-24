@@ -34,9 +34,10 @@ from tqdm import tqdm
 from rapidfuzz import fuzz, process
 from sklearn.metrics import roc_auc_score, average_precision_score
 from rdkit import Chem
+from pipeline import get_data_dir
 warnings.filterwarnings("ignore")
 
-DRIVE  = Path("/content/drive/MyDrive/ProToxNet/data")
+DRIVE  = get_data_dir()
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Device: {DEVICE}")
 

@@ -29,9 +29,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pathlib import Path
 from sklearn.metrics import roc_auc_score
+from eval import get_data_dir
 warnings.filterwarnings("ignore")
 
-DRIVE = Path("/content/drive/MyDrive/ProToxNet/data")
+DRIVE = get_data_dir()
 
 
 def main():

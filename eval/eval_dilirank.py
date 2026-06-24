@@ -29,9 +29,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.stats import mannwhitneyu
+from eval import get_data_dir
 warnings.filterwarnings("ignore")
 
-DRIVE = Path("/content/drive/MyDrive/ProToxNet/data")
+DRIVE = get_data_dir()
 
 # DILIrank v2 drug lists (Chen et al. 2016)
 MOST_CONCERN = [

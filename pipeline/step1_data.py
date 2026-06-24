@@ -25,9 +25,9 @@ import pandas as pd
 import numpy as np
 import requests
 from tqdm import tqdm
+from pipeline import get_data_dir
 
-DRIVE = Path("/content/drive/MyDrive/ProToxNet/data")
-DRIVE.mkdir(parents=True, exist_ok=True)
+DRIVE = get_data_dir()
 
 # ── DrugCentral PostgreSQL connection params ──────────────────────────────────
 DC_CONN = dict(host="unmtid-dbs.net", port=5433,

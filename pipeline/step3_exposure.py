@@ -25,9 +25,10 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from scipy import stats
+from pipeline import get_data_dir
 warnings.filterwarnings("ignore")
 
-DRIVE = Path("/content/drive/MyDrive/ProToxNet/data")
+DRIVE = get_data_dir()
 
 
 def main():

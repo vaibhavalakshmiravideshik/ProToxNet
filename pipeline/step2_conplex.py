@@ -33,13 +33,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score, average_precision_score
 from rdkit import Chem
+from pipeline import get_data_dir, get_repo_root
 
-DRIVE  = Path("/content/drive/MyDrive/ProToxNet/data")
+DRIVE  = get_data_dir()
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Device: {DEVICE}")
 
 # ConPLex repo
-CONPLEX_DIR = "/content/ConPLex"
+CONPLEX_DIR = str(get_repo_root() / ".cache" / "ConPLex")
 if not os.path.exists(CONPLEX_DIR):
     subprocess.check_call(["git", "clone", "--depth=1",
                            "https://github.com/samsledje/ConPLex.git",
@@ -50,8 +51,8 @@ from conplex_dti.featurizer import MorganFeaturizer
 from conplex_dti.model.architectures import SimpleCoembeddingNoSigmoid
 import esm as esm_lib
 
-CKPT_DIR = Path("/content/conplex_checkpoints")
-CKPT_DIR.mkdir(exist_ok=True)
+CKPT_DIR = DRIVE / "checkpoints"
+CKPT_DIR.mkdir(parents=True, exist_ok=True)
 CKPT_PATH = CKPT_DIR / "BindingDB_ExperimentalValidModel.pt"
 CKPT_URL  = ("https://cb.csail.mit.edu/cb/conplex/data/models/"
              "BindingDB_ExperimentalValidModel.pt")

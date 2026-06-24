@@ -34,11 +34,12 @@ from sklearn.metrics import (roc_curve, auc as sklearn_auc,
                              precision_recall_curve)
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from pipeline import get_data_dir
 warnings.filterwarnings("ignore")
 
-DRIVE  = Path("/content/drive/MyDrive/ProToxNet/data")
-FIGDIR = Path("/content/drive/MyDrive/ProToxNet/figures")
-FIGDIR.mkdir(exist_ok=True)
+DRIVE  = get_data_dir()
+FIGDIR = DRIVE
+FIGDIR.mkdir(parents=True, exist_ok=True)
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 

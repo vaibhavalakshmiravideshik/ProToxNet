@@ -35,9 +35,10 @@ from pathlib import Path
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, average_precision_score
+from pipeline import get_data_dir
 warnings.filterwarnings("ignore")
 
-DRIVE  = Path("/content/drive/MyDrive/ProToxNet/data")
+DRIVE  = get_data_dir()
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Device: {DEVICE}")
 
@@ -211,8 +212,9 @@ def main():
             F.binary_cross_entropy_with_logits(logits, y_smooth).backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()
-            e_loss += loss_val = F.binary_cross_entropy_with_logits(
+            loss_val = F.binary_cross_entropy_with_logits(
                 logits.detach(), y_smooth).item()
+            e_loss += loss_val
             n_b += 1
         sched.step()
         e_loss /= max(n_b, 1)
