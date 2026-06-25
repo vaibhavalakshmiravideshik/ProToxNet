@@ -235,7 +235,7 @@ If you use this repository, please cite the associated manuscript once available
 
 ## License
 
-No license file is currently included in the repository. If you plan to make the code openly reusable for the community, adding an explicit license such as MIT would be a good next step.
+This repository is released under the [MIT License](LICENSE).
 
 ## Author
 
